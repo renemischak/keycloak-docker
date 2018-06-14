@@ -1,4 +1,4 @@
-FROM jboss/keycloak:4.0.0.Final
+FROM stianst/keycloak:openshift-integration
 
 USER root
 

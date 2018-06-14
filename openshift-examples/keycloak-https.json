@@ -145,7 +145,7 @@
                     "name": "secure-${APPLICATION_NAME}"
                 },
                 "tls": {
-                    "termination": "passthrough"
+                    "termination": "reencrypt"
                 }
             }
         },
@@ -183,7 +183,7 @@
                         "containers": [
                             {
                                 "name": "${APPLICATION_NAME}",
-                                "image": "jboss/keycloak-openshift",
+                                "image": "stianst/keycloak-openshift:openshift-integration",
                                 "ports": [
                                     {
                                         "containerPort": 8080,

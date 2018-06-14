@@ -7,11 +7,21 @@ ENV LAUNCH_JBOSS_IN_BACKGROUND 1
 ENV PROXY_ADDRESS_FORWARDING false
 USER root
 
-RUN yum install -y epel-release && yum install -y jq && yum clean all
+RUN yum install -y epel-release && yum install -y jq && yum install -y git && yum clean all
 
 USER jboss
 
-RUN cd /opt/jboss/ && curl -L https://downloads.jboss.org/keycloak/$KEYCLOAK_VERSION/keycloak-$KEYCLOAK_VERSION.tar.gz | tar zx && mv /opt/jboss/keycloak-$KEYCLOAK_VERSION /opt/jboss/keycloak
+RUN cd /opt/jboss && curl -s http://apache.uib.no/maven/maven-3/3.5.3/binaries/apache-maven-3.5.3-bin.tar.gz | tar xz && mv apache-maven-3.5.3 /opt/jboss/maven
+
+RUN git clone https://github.com/stianst/keycloak.git -b openshift-integration /opt/jboss/keycloak-clone
+RUN cd /opt/jboss/keycloak-clone && export M2_HOME=/opt/jboss/maven && /opt/jboss/maven/bin/mvn clean install -DskipTests -Pdistribution
+
+ENV UPDATE=3
+
+RUN cd /opt/jboss/keycloak-clone && git fetch origin && git reset --hard origin/openshift-integration
+RUN cd /opt/jboss/keycloak-clone && export M2_HOME=/opt/jboss/maven && /opt/jboss/maven/bin/mvn clean install -DskipTests -Pdistribution
+RUN cd /opt/jboss && tar xfz /opt/jboss/keycloak-clone/distribution/server-dist/target/keycloak-*.tar.gz
+RUN rm -rf /opt/jboss/keycloak && mv /opt/jboss/keycloak-?.?.?.Final-SNAPSHOT /opt/jboss/keycloak
 
 ADD docker-entrypoint.sh /opt/jboss/
 
