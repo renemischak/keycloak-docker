@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ "$SOURCE_BRANCH" == "master" ] && [ "$CACHE_TAG" == "nightly" ]; then
+    GIT_REPO="keycloak/keycloak"
+    GIT_BRANCH="master"
+elif [[ "$CACHE_TAG" == "nightly-*" ]]; then
+    GIT_REPO="keycloak/keycloak"
+    GIT_BRANCH=`echo $CACHE_TAG | sed 's|nightly-||'`
+fi
+
+docker build --build-arg GIT_REPO=$GIT_REPO --build-arg GIT_BRANCH=$GIT_BRANCH -f $DOCKERFILE_PATH -t $IMAGE_NAME .

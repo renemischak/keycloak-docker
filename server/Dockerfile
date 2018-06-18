@@ -11,7 +11,8 @@ RUN yum install -y epel-release jq git && yum clean all
 
 USER jboss
 
-ARG SOURCE_BRANCH
+ARG GIT_REPO
+ARG GIT_BRANCH
 
 ADD build-keycloak.sh /opt/jboss/build-keycloak.sh
 RUN /opt/jboss/build-keycloak.sh
