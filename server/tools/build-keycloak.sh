@@ -4,13 +4,18 @@
 # Build/download Keycloak #
 ###########################
 
+if [ "$KEYCLOAK_VERSION" == "dev" ]; then
+    GIT_REPO="keycloak/keycloak"
+    GIT_BRANCH="master"
+fi
+
 if [ "$GIT_REPO" != "" ]; then
     if [ "$GIT_BRANCH" == "" ]; then
         GIT_BRANCH="master"
     fi
 
     # Install Git
-    microdnf install -y git
+    microdnf install -y unzip wget
 
     # Install Maven
     cd /opt/jboss 
@@ -19,15 +24,20 @@ if [ "$GIT_REPO" != "" ]; then
     export M2_HOME=/opt/jboss/maven
 
     # Clone repository
-    git clone --depth 1 https://github.com/$GIT_REPO.git -b $GIT_BRANCH /opt/jboss/keycloak-source
+    #git clone --depth 1 https://github.com/$GIT_REPO.git -b $GIT_BRANCH /opt/jboss/keycloak-source
+    wget "https://github.com/$GIT_REPO/archive/$GIT_BRANCH.zip"
+    unzip $GIT_BRANCH.zip
+    mv keycloak-$GIT_BRANCH /opt/jboss/keycloak-source
+    rm -f keycloak.zip
 
     # Build
     cd /opt/jboss/keycloak-source
 
-    MASTER_HEAD=`git log -n1 --format="%H"`
-    echo "Keycloak from [build]: $GIT_REPO/$GIT_BRANCH/commit/$MASTER_HEAD"
 
-    $M2_HOME/bin/mvn -Pdistribution -pl distribution/server-dist -am -Dmaven.test.skip clean install
+
+    echo "Keycloak from [build]: $GIT_REPO/$GIT_BRANCH"
+
+    $M2_HOME/bin/mvn -Dmaven.repo.local=/opt/jboss/.m2 -Pdistribution -pl distribution/server-dist -am -Dmaven.test.skip clean install
     
     cd /opt/jboss
 
@@ -38,7 +48,7 @@ if [ "$GIT_REPO" != "" ]; then
     # Remove temporary files
     rm -rf /opt/jboss/maven
     rm -rf /opt/jboss/keycloak-source
-    rm -rf $HOME/.m2/repository
+    #rm -rf $HOME/.m2/repository
 else
     echo "Keycloak from [download]: $KEYCLOAK_DIST"
 
